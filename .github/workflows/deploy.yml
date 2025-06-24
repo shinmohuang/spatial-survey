@@ -1,85 +1,55 @@
-name: 部署空间推理测评系统到 GitHub Pages
+# Simple workflow for deploying static content to GitHub Pages
+name: Deploy static content to Pages
 
 on:
+  # Runs on pushes targeting the main branch
   push:
-    branches: [ main, master ]
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: 检出代码
-      uses: actions/checkout@v4
-      
-    - name: 设置 Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: 'frontend/package-lock.json'
-        
-    - name: 设置 Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-        
-    - name: 安装 Python 依赖
-      run: |
-        python -m pip install --upgrade pip
-        pip install pandas numpy
-        
-    - name: 生成科学测卷
-      run: |
-        cd spatial-survey
-        # 注意：这里需要 DISE 数据集文件
-        # 在实际部署时，您需要确保数据文件存在或修改路径
-        if [ -f "/Volumes/Disk1T/DISE-dataset/DISE-bench/DISE-benchmark.csv" ]; then
-          python prepare_booklets.py
-        else
-          echo "警告: DISE 数据文件不存在，跳过测卷生成"
-          mkdir -p public/booklets
-          # 创建示例测卷用于演示
-          echo '[]' > public/booklets/0.json
-        fi
-        
-    - name: 安装前端依赖
-      run: |
-        cd spatial-survey/frontend
-        npm ci
-        
-    - name: 构建前端应用
-      run: |
-        cd spatial-survey/frontend
-        npm run build
-        
-    - name: 复制测卷数据到构建目录
-      run: |
-        cd spatial-survey
-        cp -r public/booklets frontend/dist/
-        
-    - name: 上传构建结果
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: 'spatial-survey/frontend/dist'
-
+  # Single deploy job since we're just deploying
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
     steps:
-      - name: 部署到 GitHub Pages
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'spatial-survey/frontend/package-lock.json'
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./spatial-survey/frontend
+      - name: Build
+        run: npm run build
+        working-directory: ./spatial-survey/frontend
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload dist folder
+          path: './spatial-survey/frontend/dist'
+      - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4 
