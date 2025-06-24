@@ -148,6 +148,7 @@ function App() {
           userInfo={userInfo}
           bookletId={bookletId}
           responses={responses}
+          surveyData={surveyData}
         />
       )}
     </div>

@@ -2,31 +2,45 @@ import React, { useState, useEffect } from 'react'
 import { db } from '../firebase'
 import { collection, addDoc } from "firebase/firestore"
 
-const CompletionPage = ({ userInfo, bookletId, responses }) => {
+const CompletionPage = ({ userInfo, bookletId, responses, surveyData }) => {
     const [stats, setStats] = useState({})
 
     useEffect(() => {
         // Calculate test statistics
         const calculateStats = () => {
-            const totalQuestions = Object.keys(responses.responses || {}).length
+            const userResponses = responses.responses || {};
+            const totalQuestions = surveyData.length;
+            let correctAnswers = 0;
+
+            surveyData.forEach(question => {
+                if (userResponses[question.position] === question.answer) {
+                    correctAnswers++;
+                }
+            });
+
+            const accuracy = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
             const totalTime = responses.total_time || 0
             const avgTimePerQuestion = totalQuestions > 0 ? totalTime / totalQuestions : 0
 
             return {
                 totalQuestions,
+                correctAnswers,
+                accuracy,
                 totalTime,
                 avgTimePerQuestion,
                 completedAt: responses.completed_at || new Date().toISOString()
             }
         }
 
-        setStats(calculateStats())
-    }, [responses])
+        if (surveyData && surveyData.length > 0) {
+            setStats(calculateStats());
+        }
+    }, [responses, surveyData]);
 
     useEffect(() => {
         const saveResults = async () => {
-            if (!userInfo || !userInfo.userId) {
-                console.log("User info not available, skipping save.")
+            if (!userInfo || !userInfo.userId || !stats.accuracy) {
+                console.log("User info or stats not available, skipping save.")
                 return;
             }
 
@@ -36,7 +50,8 @@ const CompletionPage = ({ userInfo, bookletId, responses }) => {
                     bookletId: bookletId,
                     age: userInfo.age,
                     gender: userInfo.gender,
-                    ...responses
+                    ...responses,
+                    stats: stats,
                 });
                 console.log("Document written with ID: ", docRef.id);
             } catch (e) {
@@ -45,8 +60,10 @@ const CompletionPage = ({ userInfo, bookletId, responses }) => {
             }
         };
 
-        saveResults();
-    }, [userInfo, bookletId, responses]); // Dependencies to ensure this runs only when data is available
+        if (stats.accuracy) {
+            saveResults();
+        }
+    }, [userInfo, bookletId, responses, stats]); // Dependencies to ensure this runs only when data is available
 
     const formatTime = (ms) => {
         if (isNaN(ms)) return '0m 0s'
@@ -93,6 +110,14 @@ const CompletionPage = ({ userInfo, bookletId, responses }) => {
                     <div className="stat-item">
                         <div className="stat-value">{stats.totalQuestions}</div>
                         <div className="stat-label">Questions Completed</div>
+                    </div>
+                    <div className="stat-item">
+                        <div className="stat-value">{stats.correctAnswers} / {stats.totalQuestions}</div>
+                        <div className="stat-label">Correct Answers</div>
+                    </div>
+                    <div className="stat-item">
+                        <div className="stat-value">{stats.accuracy?.toFixed(1)}%</div>
+                        <div className="stat-label">Accuracy</div>
                     </div>
                     <div className="stat-item">
                         <div className="stat-value">{formatTime(stats.totalTime)}</div>
