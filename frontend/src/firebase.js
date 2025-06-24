@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getFirestore } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -10,7 +10,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyChdAGcMjGCIvpSze-aQvoekhGhsZ6HQro",
     authDomain: "spatial-survey.firebaseapp.com",
     projectId: "spatial-survey",
-    storageBucket: "spatial-survey.firebasestorage.app",
+    storageBucket: "spatial-survey.appspot.com",
     messagingSenderId: "919898216788",
     appId: "1:919898216788:web:cb704e66851370782c10c1",
     measurementId: "G-TJHWF6YFH7"
@@ -18,4 +18,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+const db = getFirestore(app);
+
+export { db };
