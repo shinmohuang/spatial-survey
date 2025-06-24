@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://YourUsername.github.io/YourRepositoryName",
+  "homepage": "https://shinmohuang.github.io/spatial-survey",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
