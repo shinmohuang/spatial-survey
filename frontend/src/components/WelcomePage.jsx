@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { db } from '../firebase'
+import { collection, addDoc } from "firebase/firestore"
 
 const WelcomePage = ({ onStartSurvey }) => {
     const [formData, setFormData] = useState({
@@ -15,14 +17,27 @@ const WelcomePage = ({ onStartSurvey }) => {
         }))
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         if (!formData.consent) {
             alert('Please agree to the consent agreement')
             return
         }
         const userId = 'user_' + Math.random().toString(36).substring(2, 11)
-        onStartSurvey({ ...formData, userId })
+
+        try {
+            const docRef = await addDoc(collection(db, "users"), {
+                userId: userId,
+                age: formData.age,
+                gender: formData.gender,
+                startTime: new Date()
+            })
+            console.log("Document written with ID: ", docRef.id)
+            onStartSurvey({ ...formData, userId })
+        } catch (e) {
+            console.error("Error adding document: ", e)
+            alert('Could not start survey. Please try again.')
+        }
     }
 
     return (

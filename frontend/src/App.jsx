@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import WelcomePage from './components/WelcomePage'
 import SurveyPage from './components/SurveyPage'
 import CompletionPage from './components/CompletionPage'
+import { db } from './firebase'
+import { collection, addDoc } from 'firebase/firestore'
 
 const BACKEND_BASE = 'https://your-api-gateway-url'  // 替换为实际的API Gateway URL
 
@@ -99,8 +101,32 @@ function App() {
 
   const handleSurveyComplete = async (allResponses) => {
     setResponses(allResponses)
+    setCurrentPhase('completed') // Immediately transition to completion page for better UX
+
+    try {
+      const payload = {
+        ...allResponses,
+        userInfo,
+        userId: userInfo.userId,
+        completedAt: new Date(),
+      }
+      const docRef = await addDoc(collection(db, "results"), payload)
+      console.log("Survey results saved to Firestore with ID: ", docRef.id)
+    } catch (e) {
+      console.error("Error adding document to Firestore: ", e)
+      // Fallback or error handling
+      localStorage.setItem(`survey_fallback_${userInfo.userId}`, JSON.stringify({
+        ...allResponses,
+        userInfo,
+        error: "Firestore save failed"
+      }))
+    }
+
+    // You can keep the old saveResponses logic as a backup or for other purposes
     const saved = await saveResponses(allResponses)
-    setCurrentPhase('completed')
+    if (!saved) {
+      console.log("Primary save method (backend API) failed, but data saved to Firestore.")
+    }
   }
 
   return (
