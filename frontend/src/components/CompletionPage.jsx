@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { db } from '../firebase'
+import { collection, addDoc } from "firebase/firestore"
 
 const CompletionPage = ({ userInfo, bookletId, responses }) => {
     const [stats, setStats] = useState({})
@@ -20,6 +22,31 @@ const CompletionPage = ({ userInfo, bookletId, responses }) => {
 
         setStats(calculateStats())
     }, [responses])
+
+    useEffect(() => {
+        const saveResults = async () => {
+            if (!userInfo || !userInfo.userId) {
+                console.log("User info not available, skipping save.")
+                return;
+            }
+
+            try {
+                const docRef = await addDoc(collection(db, "responses"), {
+                    userId: userInfo.userId,
+                    bookletId: bookletId,
+                    age: userInfo.age,
+                    gender: userInfo.gender,
+                    ...responses
+                });
+                console.log("Document written with ID: ", docRef.id);
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                // Optionally, inform the user that saving failed
+            }
+        };
+
+        saveResults();
+    }, [userInfo, bookletId, responses]); // Dependencies to ensure this runs only when data is available
 
     const formatTime = (ms) => {
         if (isNaN(ms)) return '0m 0s'
