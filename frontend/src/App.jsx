@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import ConsentPage from './components/ConsentPage'
 import WelcomePage from './components/WelcomePage'
 import SurveyPage from './components/SurveyPage'
 import CompletionPage from './components/CompletionPage'
@@ -8,8 +9,9 @@ import { collection, addDoc } from 'firebase/firestore'
 const BACKEND_BASE = 'https://your-api-gateway-url'  // 替换为实际的API Gateway URL
 
 function App() {
-  const [currentPhase, setCurrentPhase] = useState('welcome') // welcome, survey, completed
+  const [currentPhase, setCurrentPhase] = useState('consent') // consent, welcome, survey, completed
   const [userInfo, setUserInfo] = useState(null)
+  const [consentData, setConsentData] = useState(null)
   const [bookletId, setBookletId] = useState(null)
   const [surveyData, setSurveyData] = useState(null)
   const [responses, setResponses] = useState({})
@@ -40,6 +42,12 @@ function App() {
       setBookletId(randomBookletId)
       return randomBookletId
     }
+  }
+
+  // 处理同意完成
+  const handleConsentComplete = (consentInfo) => {
+    setConsentData(consentInfo)
+    setCurrentPhase('welcome')
   }
 
   // 保存响应数据
@@ -83,7 +91,14 @@ function App() {
   }
 
   const handleStartSurvey = async (info) => {
-    setUserInfo(info)
+    // 合并 consent 数据和用户信息
+    const combinedUserInfo = {
+      ...info,
+      userId: consentData.userId, // 使用 consent 阶段生成的 userId
+      consentRecordId: consentData.consentRecordId,
+      consentTimestamp: consentData.consentTimestamp
+    }
+    setUserInfo(combinedUserInfo)
     const assignedBookletId = await assignBooklet()
 
     // 加载对应的测卷数据
@@ -95,7 +110,7 @@ function App() {
     } catch (error) {
       console.error('Failed to load survey data:', error)
       console.error('Tried to load:', `${import.meta.env.BASE_URL}booklets/${assignedBookletId}.json`)
-      alert('加载测试题目失败，请刷新页面重试')
+      alert('Failed to load test questions, please refresh the page and try again')
     }
   }
 
@@ -109,28 +124,49 @@ function App() {
         userInfo,
         userId: userInfo.userId,
         completedAt: new Date(),
+        // 包含同意相关信息
+        consentData: {
+          consentRecordId: userInfo.consentRecordId,
+          consentTimestamp: userInfo.consentTimestamp,
+          consentGiven: true,
+          saveMethod: userInfo.saveMethod || 'firestore'
+        }
       }
       const docRef = await addDoc(collection(db, "results"), payload)
       console.log("Survey results saved to Firestore with ID: ", docRef.id)
     } catch (e) {
       console.error("Error adding document to Firestore: ", e)
       // Fallback or error handling
-      localStorage.setItem(`survey_fallback_${userInfo.userId}`, JSON.stringify({
+      const fallbackData = {
         ...allResponses,
         userInfo,
-        error: "Firestore save failed"
-      }))
+        consentData: {
+          consentRecordId: userInfo.consentRecordId,
+          consentTimestamp: userInfo.consentTimestamp,
+          consentGiven: true,
+          saveMethod: userInfo.saveMethod || 'firestore'
+        },
+        error: "Firestore save failed",
+        fallbackSavedAt: new Date().toISOString()
+      }
+
+      localStorage.setItem(`survey_fallback_${userInfo.userId}`, JSON.stringify(fallbackData))
+      console.log("Survey results saved to localStorage as fallback")
     }
 
     // You can keep the old saveResponses logic as a backup or for other purposes
     const saved = await saveResponses(allResponses)
     if (!saved) {
-      console.log("Primary save method (backend API) failed, but data saved to Firestore.")
+      console.log("Primary save method (backend API) failed, but attempting Firestore save.")
     }
   }
 
   return (
     <div className="App">
+      {currentPhase === 'consent' && (
+        <ConsentPage onConsentComplete={handleConsentComplete} />
+      )}
+
       {currentPhase === 'welcome' && (
         <WelcomePage onStartSurvey={handleStartSurvey} />
       )}

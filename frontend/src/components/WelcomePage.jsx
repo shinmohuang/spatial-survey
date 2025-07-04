@@ -5,8 +5,7 @@ import { collection, addDoc } from "firebase/firestore"
 const WelcomePage = ({ onStartSurvey }) => {
     const [formData, setFormData] = useState({
         age: '',
-        gender: '',
-        consent: false
+        gender: ''
     })
 
     const handleInputChange = (e) => {
@@ -19,21 +18,21 @@ const WelcomePage = ({ onStartSurvey }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        if (!formData.consent) {
-            alert('Please agree to the consent agreement')
+
+        // Basic validation
+        if (!formData.age || !formData.gender) {
+            alert('Please fill in all required fields')
             return
         }
-        const userId = 'user_' + Math.random().toString(36).substring(2, 11)
 
         try {
             const docRef = await addDoc(collection(db, "users"), {
-                userId: userId,
                 age: formData.age,
                 gender: formData.gender,
                 startTime: new Date()
             })
-            console.log("Document written with ID: ", docRef.id)
-            onStartSurvey({ ...formData, userId })
+            console.log("User info saved with ID: ", docRef.id)
+            onStartSurvey({ ...formData, userRecordId: docRef.id })
         } catch (e) {
             console.error("Error adding document: ", e)
             alert('Could not start survey. Please try again.')
@@ -71,14 +70,16 @@ const WelcomePage = ({ onStartSurvey }) => {
                 <form onSubmit={handleSubmit} className="form">
                     <div className="form-row">
                         <div className="form-group">
-                            <label htmlFor="age">Age</label>
+                            <label htmlFor="age">Age <span className="required">*</span></label>
                             <select
                                 id="age"
                                 name="age"
                                 value={formData.age}
                                 onChange={handleInputChange}
+                                required
                             >
                                 <option value="">Please select</option>
+                                <option value="Under 18">Under 18 years</option>
                                 <option value="18-25">18-25 years</option>
                                 <option value="26-35">26-35 years</option>
                                 <option value="36-45">36-45 years</option>
@@ -88,12 +89,13 @@ const WelcomePage = ({ onStartSurvey }) => {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="gender">Gender</label>
+                            <label htmlFor="gender">Gender <span className="required">*</span></label>
                             <select
                                 id="gender"
                                 name="gender"
                                 value={formData.gender}
                                 onChange={handleInputChange}
+                                required
                             >
                                 <option value="">Please select</option>
                                 <option value="male">Male</option>
@@ -101,20 +103,6 @@ const WelcomePage = ({ onStartSurvey }) => {
                                 <option value="other">Other</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div className="consent-section">
-                        <label className="checkbox-label">
-                            <input
-                                type="checkbox"
-                                name="consent"
-                                checked={formData.consent}
-                                onChange={handleInputChange}
-                                required
-                            />
-                            <span className="checkmark"></span>
-                            I agree to participate in this cognitive ability assessment, understanding that the data will be used for research purposes and my personal privacy will be protected.
-                        </label>
                     </div>
 
                     <button type="submit" className="btn-primary btn-large">
