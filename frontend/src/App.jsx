@@ -44,10 +44,72 @@ function App() {
     }
   }
 
-  // 处理同意完成
-  const handleConsentComplete = (consentInfo) => {
-    setConsentData(consentInfo)
-    setCurrentPhase('welcome')
+  // Handle consent completion
+  const handleConsentComplete = async (consentInfo) => {
+    // Generate user ID
+    const userId = 'user_' + Math.random().toString(36).substring(2, 11);
+    const consentRecord = {
+      userId: userId,
+      consentGiven: consentInfo.consentGiven,
+      consentTimestamp: consentInfo.consentTimestamp,
+      userAgent: navigator.userAgent
+    };
+
+    try {
+      // Try to save consent record to Firestore
+      const docRef = await addDoc(collection(db, "consent_records"), consentRecord);
+      console.log("Consent record saved to Firestore with ID: ", docRef.id);
+
+      const finalConsentData = {
+        ...consentRecord,
+        consentRecordId: docRef.id,
+        saveMethod: 'firestore'
+      };
+      setConsentData(finalConsentData);
+      setCurrentPhase('welcome');
+
+    } catch (e) {
+      console.error("Error saving consent record to Firestore: ", e);
+
+      // Fallback strategy: save to local storage
+      try {
+        const localConsentData = {
+          ...consentRecord,
+          savedAt: new Date().toISOString(),
+          saveMethod: 'localStorage',
+          error: e.message
+        };
+        localStorage.setItem(`consent_${userId}`, JSON.stringify(localConsentData));
+        console.log("Consent record saved to localStorage as fallback");
+
+        const finalConsentData = {
+          ...consentRecord,
+          consentRecordId: `local_${userId}`,
+          saveMethod: 'localStorage'
+        };
+        setConsentData(finalConsentData);
+        setCurrentPhase('welcome');
+        alert('Network connection is unstable. Your consent has been saved locally. You can continue with the research.');
+
+      } catch (localError) {
+        console.error("Error saving to localStorage: ", localError);
+
+        // Final fallback: still allow to continue, but record the error
+        const finalConsentData = {
+          ...consentRecord,
+          consentRecordId: `error_${userId}`,
+          saveMethod: 'none',
+          error: e.message,
+          localError: localError.message
+        };
+        setConsentData(finalConsentData);
+        setCurrentPhase('welcome');
+        alert('Technical issues occurred while saving consent record, but you can still continue with the research. Your consent has been recorded.');
+
+        // We can throw the error to be caught by the caller component if needed
+        throw localError;
+      }
+    }
   }
 
   // 保存响应数据
