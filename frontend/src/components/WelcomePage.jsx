@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next';
 import { db } from '../firebase'
 import { collection, addDoc } from "firebase/firestore"
 
 const WelcomePage = ({ onStartSurvey }) => {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState({
         age: '',
         gender: ''
@@ -21,7 +23,7 @@ const WelcomePage = ({ onStartSurvey }) => {
 
         // Basic validation
         if (!formData.age || !formData.gender) {
-            alert('Please fill in all required fields')
+            alert(t('welcomePage.requiredFieldAlert'))
             return
         }
 
@@ -35,42 +37,42 @@ const WelcomePage = ({ onStartSurvey }) => {
             onStartSurvey({ ...formData, userRecordId: docRef.id })
         } catch (e) {
             console.error("Error adding document: ", e)
-            alert('Could not start survey. Please try again.')
+            alert(t('welcomePage.startSurveyError'))
         }
     }
 
     return (
         <div className="container">
             <div className="welcome-header">
-                <h1 className="title">🎲 Spatial-DISE</h1>
+                <h1 className="title">🎲 {t('welcomePage.title')}</h1>
             </div>
 
             <div className="card">
-                <h2>📋 Test Instructions</h2>
+                <h2>📋 {t('welcomePage.testInstructions')}</h2>
                 <div className="info-grid">
                     <div className="info-item">
                         <span className="info-icon">🎯</span>
                         <div>
-                            <strong>Test Purpose</strong>
-                            <p>To assess your spatial reasoning and visual cognitive abilities.</p>
+                            <strong>{t('welcomePage.testPurpose')}</strong>
+                            <p>{t('welcomePage.testPurposeText')}</p>
                         </div>
                     </div>
                     <div className="info-item">
                         <span className="info-icon">⏱️</span>
                         <div>
-                            <strong>Estimated Time</strong>
-                            <p>Approximately 15-20 minutes, 30 questions.</p>
+                            <strong>{t('welcomePage.estimatedTime')}</strong>
+                            <p>{t('welcomePage.estimatedTimeText')}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div className="card">
-                <h2>👤 Participant Information</h2>
+                <h2>👤 {t('welcomePage.participantInfo')}</h2>
                 <form onSubmit={handleSubmit} className="form">
                     <div className="form-row">
                         <div className="form-group">
-                            <label htmlFor="age">Age <span className="required">*</span></label>
+                            <label htmlFor="age">{t('welcomePage.age')} <span className="required">*</span></label>
                             <select
                                 id="age"
                                 name="age"
@@ -78,18 +80,18 @@ const WelcomePage = ({ onStartSurvey }) => {
                                 onChange={handleInputChange}
                                 required
                             >
-                                <option value="">Please select</option>
-                                <option value="Under 18">Under 18 years</option>
-                                <option value="18-25">18-25 years</option>
-                                <option value="26-35">26-35 years</option>
-                                <option value="36-45">36-45 years</option>
-                                <option value="46-55">46-55 years</option>
-                                <option value="55+">Over 55 years</option>
+                                <option value="">{t('welcomePage.pleaseSelect')}</option>
+                                <option value="Under 18">{t('welcomePage.under18')}</option>
+                                <option value="18-25">{t('welcomePage.years18_25')}</option>
+                                <option value="26-35">{t('welcomePage.years26_35')}</option>
+                                <option value="36-45">{t('welcomePage.years36_45')}</option>
+                                <option value="46-55">{t('welcomePage.years46_55')}</option>
+                                <option value="55+">{t('welcomePage.over55')}</option>
                             </select>
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="gender">Gender <span className="required">*</span></label>
+                            <label htmlFor="gender">{t('welcomePage.gender')} <span className="required">*</span></label>
                             <select
                                 id="gender"
                                 name="gender"
@@ -97,22 +99,22 @@ const WelcomePage = ({ onStartSurvey }) => {
                                 onChange={handleInputChange}
                                 required
                             >
-                                <option value="">Please select</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
+                                <option value="">{t('welcomePage.pleaseSelect')}</option>
+                                <option value="male">{t('welcomePage.male')}</option>
+                                <option value="female">{t('welcomePage.female')}</option>
+                                <option value="other">{t('welcomePage.other')}</option>
                             </select>
                         </div>
                     </div>
 
                     <button type="submit" className="btn-primary btn-large">
-                        🚀 Start Test
+                        🚀 {t('welcomePage.startTest')}
                     </button>
                 </form>
             </div>
 
             <div className="footer">
-                <p>🔒 Your data is secure | 🧬 Based on the Spatial-DISE Bench | 🏛️ For research purposes</p>
+                <p>{t('welcomePage.footer')}</p>
             </div>
         </div>
     )

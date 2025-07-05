@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next';
 import ConsentPage from './components/ConsentPage'
 import WelcomePage from './components/WelcomePage'
 import SurveyPage from './components/SurveyPage'
@@ -9,6 +10,7 @@ import { collection, addDoc } from 'firebase/firestore'
 const BACKEND_BASE = 'https://your-api-gateway-url'  // 替换为实际的API Gateway URL
 
 function App() {
+  const { t, i18n } = useTranslation();
   const [currentPhase, setCurrentPhase] = useState('consent') // consent, welcome, survey, completed
   const [userInfo, setUserInfo] = useState(null)
   const [consentData, setConsentData] = useState(null)
@@ -89,7 +91,7 @@ function App() {
         };
         setConsentData(finalConsentData);
         setCurrentPhase('welcome');
-        alert('Network connection is unstable. Your consent has been saved locally. You can continue with the research.');
+        alert(t('app.consentSaveLocal'));
 
       } catch (localError) {
         console.error("Error saving to localStorage: ", localError);
@@ -104,7 +106,7 @@ function App() {
         };
         setConsentData(finalConsentData);
         setCurrentPhase('welcome');
-        alert('Technical issues occurred while saving consent record, but you can still continue with the research. Your consent has been recorded.');
+        alert(t('app.consentSaveError'));
 
         // We can throw the error to be caught by the caller component if needed
         throw localError;
@@ -172,7 +174,7 @@ function App() {
     } catch (error) {
       console.error('Failed to load survey data:', error)
       console.error('Tried to load:', `${import.meta.env.BASE_URL}booklets/${assignedBookletId}.json`)
-      alert('Failed to load test questions, please refresh the page and try again')
+      alert(t('app.loadSurveyError'))
     }
   }
 
@@ -223,32 +225,28 @@ function App() {
     }
   }
 
+  const renderPhase = () => {
+    switch (currentPhase) {
+      case 'consent':
+        return <ConsentPage onConsentComplete={handleConsentComplete} />
+      case 'welcome':
+        return <WelcomePage onStartSurvey={handleStartSurvey} />
+      case 'survey':
+        return <SurveyPage surveyData={surveyData} bookletId={bookletId} onComplete={handleSurveyComplete} />
+      case 'completed':
+        return <CompletionPage userInfo={userInfo} bookletId={bookletId} responses={responses} surveyData={surveyData} />
+      default:
+        return <WelcomePage onStartSurvey={handleStartSurvey} />
+    }
+  }
+
   return (
     <div className="App">
-      {currentPhase === 'consent' && (
-        <ConsentPage onConsentComplete={handleConsentComplete} />
-      )}
-
-      {currentPhase === 'welcome' && (
-        <WelcomePage onStartSurvey={handleStartSurvey} />
-      )}
-
-      {currentPhase === 'survey' && surveyData && (
-        <SurveyPage
-          surveyData={surveyData}
-          bookletId={bookletId}
-          onComplete={handleSurveyComplete}
-        />
-      )}
-
-      {currentPhase === 'completed' && (
-        <CompletionPage
-          userInfo={userInfo}
-          bookletId={bookletId}
-          responses={responses}
-          surveyData={surveyData}
-        />
-      )}
+      <div className="language-switcher">
+        <button onClick={() => i18n.changeLanguage('en')} disabled={i18n.language === 'en'}>English</button>
+        <button onClick={() => i18n.changeLanguage('zh')} disabled={i18n.language === 'zh'}>中文</button>
+      </div>
+      {renderPhase()}
     </div>
   )
 }

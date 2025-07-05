@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next';
 import QuestionCard from './QuestionCard'
 
 const SurveyPage = ({ surveyData, bookletId, onComplete }) => {
+    const { t } = useTranslation();
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
     const [responses, setResponses] = useState({})
     const [startTime] = useState(Date.now())
@@ -76,7 +78,7 @@ const SurveyPage = ({ surveyData, bookletId, onComplete }) => {
     }
 
     if (!currentQuestion) {
-        return <div className="container">Loading...</div>
+        return <div className="container">{t('surveyPage.loading')}</div>
     }
 
     return (
@@ -84,9 +86,9 @@ const SurveyPage = ({ surveyData, bookletId, onComplete }) => {
             {/* Top Navigation Bar */}
             <div className="survey-header">
                 <div className="survey-info">
-                    <span className="booklet-id">📚 Booklet #{bookletId}</span>
+                    <span className="booklet-id">📚 {t('surveyPage.booklet')} #{bookletId}</span>
                     <span className="question-counter">
-                        Question {currentQuestionIndex + 1} / {totalQuestions}
+                        {t('surveyPage.question')} {currentQuestionIndex + 1} / {totalQuestions}
                     </span>
                     <span className="timer">
                         ⏱️ {formatTime(elapsedTime)}
@@ -118,12 +120,12 @@ const SurveyPage = ({ surveyData, bookletId, onComplete }) => {
                         disabled={currentQuestionIndex === 0}
                         className="btn-secondary"
                     >
-                        ← Previous
+                        ← {t('surveyPage.previous')}
                     </button>
 
                     <div className="middle-info">
                         <span className="answered-count">
-                            Answered: {getAnsweredCount()} / {totalQuestions}
+                            {t('surveyPage.answered')}: {getAnsweredCount()} / {totalQuestions}
                         </span>
                     </div>
 
@@ -132,7 +134,7 @@ const SurveyPage = ({ surveyData, bookletId, onComplete }) => {
                         className={isCurrentQuestionAnswered() ? 'btn-primary' : 'btn-secondary'}
                         disabled={!isCurrentQuestionAnswered() && currentQuestionIndex < totalQuestions - 1}
                     >
-                        {currentQuestionIndex === totalQuestions - 1 ? 'Finish Test ✓' : 'Next →'}
+                        {currentQuestionIndex === totalQuestions - 1 ? t('surveyPage.finishTest') : `${t('surveyPage.next')} →`}
                     </button>
                 </div>
 
@@ -145,7 +147,7 @@ const SurveyPage = ({ surveyData, bookletId, onComplete }) => {
                             className={`nav-dot ${index === currentQuestionIndex ? 'current' :
                                 responses[surveyData[index].position] ? 'answered' : 'unanswered'
                                 }`}
-                            title={`Question ${index + 1}${responses[surveyData[index].position] ? ' (Answered)' : ''}`}
+                            title={responses[surveyData[index].position] ? t('surveyPage.questionNavAnswered', { index: index + 1 }) : t('surveyPage.questionNav', { index: index + 1 })}
                         >
                             {index + 1}
                         </button>

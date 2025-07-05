@@ -1,6 +1,8 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next';
 
 const QuestionCard = ({ question, selectedAnswer, onAnswerSelect }) => {
+    const { t, i18n } = useTranslation();
     if (!question) return null
 
     const handleAnswerClick = (answer) => {
@@ -51,7 +53,9 @@ const QuestionCard = ({ question, selectedAnswer, onAnswerSelect }) => {
             </div>
 
             <div className="question-content">
-                <h3 className="question-text">{question.question}</h3>
+                <h3 className="question-text">
+                    {i18n.language === 'zh' && question.question_zh ? question.question_zh : question.question}
+                </h3>
 
                 {question.image && (
                     <div className="question-image">
@@ -64,14 +68,14 @@ const QuestionCard = ({ question, selectedAnswer, onAnswerSelect }) => {
                             }}
                         />
                         <div className="image-error" style={{ display: 'none' }}>
-                            ⚠️ Image failed to load
+                            ⚠️ {t('questionCard.imageFailedToLoad')}
                         </div>
                     </div>
                 )}
             </div>
 
             <div className="options-container">
-                <h4>Please select an answer:</h4>
+                <h4>{t('questionCard.pleaseSelectAnAnswer')}</h4>
                 <div className="options-grid">
                     {optionList.map((option, index) => (
                         <button
@@ -88,9 +92,9 @@ const QuestionCard = ({ question, selectedAnswer, onAnswerSelect }) => {
             <div className="question-footer">
                 <div className="answer-indicator">
                     {selectedAnswer ? (
-                        <span className="selected-answer">✓ Answer selected: {selectedAnswer}</span>
+                        <span className="selected-answer">✓ {t('questionCard.answerSelected', { answer: selectedAnswer })}</span>
                     ) : (
-                        <span className="no-answer">Please select an answer</span>
+                        <span className="no-answer">{t('questionCard.noAnswer')}</span>
                     )}
                 </div>
             </div>

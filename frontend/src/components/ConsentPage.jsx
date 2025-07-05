@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation, Trans } from 'react-i18next';
 
 const ConsentPage = ({ onConsentComplete }) => {
+    const { t } = useTranslation();
     const [consentGiven, setConsentGiven] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -24,7 +26,7 @@ const ConsentPage = ({ onConsentComplete }) => {
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (!consentGiven) {
-            alert('Please agree to the informed consent form to participate in the research')
+            alert(t('consentPage.agreeAlert'))
             return
         }
 
@@ -35,7 +37,7 @@ const ConsentPage = ({ onConsentComplete }) => {
         } catch (error) {
             // The App component will show a specific alert. 
             // This is a final catch-all if the promise from App.jsx rejects.
-            alert('An error occurred while saving your consent. Please try again.');
+            alert(t('consentPage.consentError'));
             console.error('Submission failed in ConsentPage:', error);
             setIsSubmitting(false)
         }
@@ -45,43 +47,43 @@ const ConsentPage = ({ onConsentComplete }) => {
     return (
         <div className="container">
             <div className="welcome-header">
-                <h1 className="title">🔒 Research Participation Informed Consent</h1>
+                <h1 className="title">🔒 {t('consentPage.title')}</h1>
             </div>
 
             <div className="card">
-                <h2>📄 Research Information & Consent Forms</h2>
+                <h2>📄 {t('consentPage.researchInfoTitle')}</h2>
                 <p style={{ fontSize: '1.1em', marginBottom: '30px', color: 'var(--text-primary)' }}>
-                    Before participating in this spatial cognitive ability research, please carefully read the following documents:
+                    {t('consentPage.researchInfoText')}
                 </p>
 
                 <div className="info-grid">
                     <div className="info-item">
                         <span className="info-icon">📋</span>
                         <div>
-                            <strong>Participant Information Sheet</strong>
-                            <p>Detailed explanation of research purpose, process, and your rights</p>
+                            <strong>{t('consentPage.participantInfoSheet')}</strong>
+                            <p>{t('consentPage.participantInfoSheetText')}</p>
                             <a
                                 href={`${import.meta.env.BASE_URL}Participant Information Sheet.pdf`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="pdf-link"
                             >
-                                📖 View Participant Information Sheet (PDF)
+                                📖 {t('consentPage.viewParticipantInfoSheet')}
                             </a>
                         </div>
                     </div>
                     <div className="info-item">
                         <span className="info-icon">✍️</span>
                         <div>
-                            <strong>Informed Consent Form</strong>
-                            <p>Formal legal document for consent to participate in research</p>
+                            <strong>{t('consentPage.informedConsentForm')}</strong>
+                            <p>{t('consentPage.informedConsentFormText')}</p>
                             <a
                                 href={`${import.meta.env.BASE_URL}Participant Consent Form.pdf`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="pdf-link"
                             >
-                                📄 View Informed Consent Form (PDF)
+                                📄 {t('consentPage.viewInformedConsentForm')}
                             </a>
                         </div>
                     </div>
@@ -89,7 +91,7 @@ const ConsentPage = ({ onConsentComplete }) => {
             </div>
 
             <div className="card">
-                <h2>✅ Consent Confirmation</h2>
+                <h2>✅ {t('consentPage.consentConfirmation')}</h2>
                 <form onSubmit={handleSubmit} className="form">
                     <div className="consent-section">
                         <label className="checkbox-label">
@@ -101,9 +103,11 @@ const ConsentPage = ({ onConsentComplete }) => {
                             />
                             <span className="checkmark"></span>
                             <span>
-                                I have carefully read and understood the contents of the <strong>Participant Information Sheet</strong> and <strong>Informed Consent Form</strong>.
-                                I understand the purpose, process, risks, and benefits of the research, and voluntarily agree to participate in this spatial cognitive ability study.
-                                I understand that I have the right to withdraw from the study at any time, and that my personal information will be kept confidential.
+                                <Trans i18nKey="consentPage.consentCheckboxLabel">
+                                    I have carefully read and understood the contents of the <strong>Participant Information Sheet</strong> and <strong>Informed Consent Form</strong>.
+                                    I understand the purpose, process, risks, and benefits of the research, and voluntarily agree to participate in this spatial cognitive ability study.
+                                    I understand that I have the right to withdraw from the study at any time, and that my personal information will be kept confidential.
+                                </Trans>
                             </span>
                         </label>
                     </div>
@@ -113,15 +117,14 @@ const ConsentPage = ({ onConsentComplete }) => {
                         className="btn-primary btn-large"
                         disabled={!consentGiven || isSubmitting}
                     >
-                        {isSubmitting ? '⏳ Saving...' : '✅ I Agree and Continue'}
+                        {isSubmitting ? `⏳ ${t('consentPage.saving')}` : `✅ ${t('consentPage.agreeAndContinue')}`}
                     </button>
                 </form>
             </div>
 
             <div className="footer">
                 <p>
-                    🔒 Your data is secure | 🧬 Based on Spatial-DISE benchmark | 🏛️ For research purposes |
-                    📧 Contact the research team if you have questions
+                    {t('consentPage.footer')}
                 </p>
 
                 {/* Network status display */}
@@ -137,7 +140,7 @@ const ConsentPage = ({ onConsentComplete }) => {
                         color: isOnline ? '#155724' : '#721c24',
                         fontWeight: '600'
                     }}>
-                        {isOnline ? '🟢 Network status: Online' : '🔴 Network status: Offline'}
+                        {isOnline ? `🟢 ${t('consentPage.networkStatusOnline')}` : `🔴 ${t('consentPage.networkStatusOffline')}`}
                     </span>
                 </div>
             </div>

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next';
 import { db } from '../firebase'
 import { collection, addDoc } from "firebase/firestore"
 
 const CompletionPage = ({ userInfo, bookletId, responses, surveyData }) => {
+    const { t, i18n } = useTranslation();
     const [stats, setStats] = useState({})
 
     useEffect(() => {
@@ -94,92 +96,89 @@ const CompletionPage = ({ userInfo, bookletId, responses, surveyData }) => {
 
     return (
         <div className="container">
-            <h1 className="title fade-in">🎉 Test Completed!</h1>
+            <h1 className="title fade-in">🎉 {t('completionPage.title')}</h1>
 
             <div className="card fade-in">
-                <h2 className="subtitle">Thank you for participating in the spatial reasoning assessment.</h2>
+                <h2 className="subtitle">{t('completionPage.thankYou')}</h2>
 
                 <div style={{ textAlign: 'center', marginBottom: '30px' }}>
                     <div style={{ fontSize: '48px', marginBottom: '10px' }}>✅</div>
                     <p style={{ fontSize: '18px', color: 'var(--success-color)', fontWeight: '600' }}>
-                        You have successfully completed all questions in booklet #{bookletId}.
+                        {t('completionPage.successMessage', { bookletId })}
                     </p>
                 </div>
 
                 <div className="stats-grid">
                     <div className="stat-item">
                         <div className="stat-value">{stats.totalQuestions}</div>
-                        <div className="stat-label">Questions Completed</div>
+                        <div className="stat-label">{t('completionPage.questionsCompleted')}</div>
                     </div>
                     <div className="stat-item">
                         <div className="stat-value">{stats.correctAnswers} / {stats.totalQuestions}</div>
-                        <div className="stat-label">Correct Answers</div>
+                        <div className="stat-label">{t('completionPage.correctAnswers')}</div>
                     </div>
                     <div className="stat-item">
                         <div className="stat-value">{stats.accuracy?.toFixed(1)}%</div>
-                        <div className="stat-label">Accuracy</div>
+                        <div className="stat-label">{t('completionPage.accuracy')}</div>
                     </div>
                     <div className="stat-item">
                         <div className="stat-value">{formatTime(stats.totalTime)}</div>
-                        <div className="stat-label">Total Time</div>
+                        <div className="stat-label">{t('completionPage.totalTime')}</div>
                     </div>
                     <div className="stat-item">
                         <div className="stat-value">{formatTime(stats.avgTimePerQuestion)}</div>
-                        <div className="stat-label">Avg. Time / Q</div>
+                        <div className="stat-label">{t('completionPage.avgTimePerQ')}</div>
                     </div>
                     <div className="stat-item">
                         <div className="stat-value">#{bookletId}</div>
-                        <div className="stat-label">Booklet ID</div>
+                        <div className="stat-label">{t('completionPage.bookletId')}</div>
                     </div>
                 </div>
             </div>
 
             <div className="card fade-in">
-                <h3>📊 Test Information</h3>
+                <h3>📊 {t('completionPage.testInformation')}</h3>
                 <div className="info-table">
                     <div className="info-row">
-                        <span className="info-key">User ID:</span>
+                        <span className="info-key">{t('completionPage.userId')}</span>
                         <span className="info-value">{userInfo.userId}</span>
                     </div>
                     <div className="info-row">
-                        <span className="info-key">Booklet ID:</span>
+                        <span className="info-key">{t('completionPage.bookletId')}:</span>
                         <span className="info-value">#{bookletId}</span>
                     </div>
                     <div className="info-row">
-                        <span className="info-key">Completion Time:</span>
+                        <span className="info-key">{t('completionPage.completionTime')}</span>
                         <span className="info-value">
-                            {new Date(stats.completedAt).toLocaleString('en-US')}
+                            {new Date(stats.completedAt).toLocaleString(i18n.language)}
                         </span>
                     </div>
                     <div className="info-row">
-                        <span className="info-key">Age:</span>
-                        <span className="info-value">{userInfo.age || 'Not provided'}</span>
+                        <span className="info-key">{t('completionPage.age')}</span>
+                        <span className="info-value">{userInfo.age || t('completionPage.notProvided')}</span>
                     </div>
                     <div className="info-row">
-                        <span className="info-key">Gender:</span>
-                        <span className="info-value">{userInfo.gender || 'Not provided'}</span>
+                        <span className="info-key">{t('completionPage.gender')}</span>
+                        <span className="info-value">{userInfo.gender || t('completionPage.notProvided')}</span>
                     </div>
                 </div>
             </div>
 
             <div className="action-buttons">
                 <button onClick={downloadResults} className="btn-secondary">
-                    💾 Download Results
+                    💾 {t('completionPage.downloadResults')}
                 </button>
                 <button
                     onClick={() => window.location.reload()}
                     className="btn-primary"
                 >
-                    🔄 Retake Test
+                    🔄 {t('completionPage.retakeTest')}
                 </button>
             </div>
 
             <div className="footer">
                 <p>
-                    🔒 Your data has been securely saved |
-                    🧬 Based on the Spatial-DISE dataset |
-                    🏛️ For research purposes |
-                    📧 Contact the research team for any questions
+                    {t('completionPage.footer')}
                 </p>
             </div>
         </div>
